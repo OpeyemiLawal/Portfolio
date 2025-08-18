@@ -2,20 +2,19 @@
 
 import { supabaseServer } from '@/lib/supabase/server'
 
-export type AdminProject = {
+export type AdminProject  = {
   id: string
   title: string
   subtitle?: string
-  cover?: string
-  video?: string
-  gallery?: string[]
-  category: string
-  tags?: string[]
   description?: string
-  problemSolution?: string[]
   stack?: string[]
   aiTools?: string[]
   links?: { demo?: string; repo?: string }
+  category: string
+  tags?: string[]
+  cover?: string
+  video?: string
+  gallery?: string[]
   published?: boolean
 }
 
@@ -30,11 +29,10 @@ function mapRowToProject(row: any): AdminProject {
     category: row.category,
     tags: Array.isArray(row.tags) ? row.tags : [],
     description: row.description || '',
-    problemSolution: Array.isArray(row.problem_solution) ? row.problem_solution : [],
     stack: Array.isArray(row.stack) ? row.stack : [],
     aiTools: Array.isArray(row.ai_tools) ? row.ai_tools : [],
     links: typeof row.links === 'object' && row.links !== null ? row.links : {},
-    published: Boolean(row.published),
+    published: row.published || false,
   }
 }
 
@@ -49,11 +47,10 @@ function mapProjectToRow(p: AdminProject) {
     category: p.category,
     tags: p.tags || [],
     description: p.description || null,
-    problem_solution: p.problemSolution || [],
     stack: p.stack || [],
     ai_tools: p.aiTools || [],
     links: p.links || {},
-    published: p.published ?? true,
+    published: p.published || false,
     updated_at: new Date().toISOString(),
   }
 }
@@ -63,7 +60,7 @@ export async function listProjects(): Promise<AdminProject[]> {
   const { data, error } = await supabase
     .from('projects')
     .select(
-      'id, title, subtitle, cover, video, gallery, category, tags, description, problem_solution, stack, ai_tools, links, published, updated_at'
+      'id, title, subtitle, cover, video, gallery, category, tags, description, stack, ai_tools, links, published, updated_at'
     )
     .order('updated_at', { ascending: false })
   if (error) throw error

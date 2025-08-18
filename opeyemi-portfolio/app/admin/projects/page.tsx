@@ -25,7 +25,6 @@ type AdminProject = {
   category: string
   tags?: string[]
   description?: string
-  problemSolution?: string[]
   stack?: string[]
   aiTools?: string[]
   links?: { demo?: string; repo?: string }
@@ -42,10 +41,9 @@ const DEFAULT_PROJECT: AdminProject = {
   category: "game",
   tags: [],
   description: "",
-  problemSolution: [],
   stack: [],
   aiTools: [],
-  links: { demo: "", repo: "" },
+  links: { demo: "", repo: "" }
 }
 
 export default function AdminProjectsPage() {
@@ -210,8 +208,30 @@ export default function AdminProjectsPage() {
     }
   }
 
+  function addTechStackItem(item: string) {
+    const clean = item.trim()
+    if (!clean) return
+    const nextStack = Array.from(new Set([...(selected?.stack || []), clean]))
+    updateSelected({ stack: nextStack })
+  }
+
+  function addAITool(item: string) {
+    const clean = item.trim()
+    if (!clean) return
+    const nextAITools = Array.from(new Set([...(selected?.aiTools || []), clean]))
+    updateSelected({ aiTools: nextAITools })
+  }
+
   function removeTag(tag: string) {
     updateSelected({ tags: (selected?.tags || []).filter((t) => t !== tag) })
+  }
+
+  function removeTechStackItem(item: string) {
+    updateSelected({ stack: (selected?.stack || []).filter((t) => t !== item) })
+  }
+
+  function removeAITool(item: string) {
+    updateSelected({ aiTools: (selected?.aiTools || []).filter((t) => t !== item) })
   }
 
   async function handleImageFiles(files: FileList | null) {
@@ -506,25 +526,60 @@ export default function AdminProjectsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Tech Stack</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {(selected.stack || []).map((item) => (
+                        <Badge key={item} variant="secondary" className="bg-gray-800 text-gray-200">
+                          {item}
+                          <button className="ml-1 inline-flex" onClick={() => removeTechStackItem(item)} aria-label={`Remove ${item}`}>
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
                     <Input
-                      placeholder="Comma separated"
-                      value={(selected.stack || []).join(", ")}
-                      onChange={(e) => updateSelected({ stack: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
+                      placeholder="Type and press Enter to add"
+                      onKeyDown={(e) => {
+                        const input = e.currentTarget as HTMLInputElement
+                        if (e.key === 'Enter' && input.value.trim()) {
+                          addTechStackItem(input.value.trim())
+                          input.value = ""
+                        }
+                      }}
                     />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
                     <Label>AI Tools</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {(selected.aiTools || []).map((tool) => (
+                        <Badge key={tool} variant="secondary" className="bg-purple-800/50 text-purple-200 border-purple-700">
+                          {tool}
+                          <button className="ml-1 inline-flex" onClick={() => removeAITool(tool)} aria-label={`Remove ${tool}`}>
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
                     <Input
-                      placeholder="Comma separated"
-                      value={(selected.aiTools || []).join(", ")}
-                      onChange={(e) => updateSelected({ aiTools: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
+                      placeholder="Type and press Enter to add"
+                      onKeyDown={(e) => {
+                        const input = e.currentTarget as HTMLInputElement
+                        if (e.key === 'Enter' && input.value.trim()) {
+                          addAITool(input.value.trim())
+                          input.value = ""
+                        }
+                      }}
                     />
                   </div>
                 </TabsContent>
                 <TabsContent value="links" className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Demo URL</Label>
-                    <Input value={selected.links?.demo || ""} onChange={(e) => updateSelected({ links: { ...selected.links, demo: e.target.value } })} />
+                    <Label>Playable Game URL</Label>
+                    <Input 
+                      placeholder="https://example.com/game" 
+                      value={selected.links?.demo || ""} 
+                      onChange={(e) => updateSelected({ links: { ...selected.links, demo: e.target.value } })} 
+                    />
+                    <p className="text-xs text-gray-500">Enter the full URL to the playable game (will be loaded in an iframe)</p>
                   </div>
                   <div className="space-y-2">
                     <Label>Repo URL</Label>
@@ -538,14 +593,6 @@ export default function AdminProjectsPage() {
                 <Textarea rows={4} value={selected.description || ""} onChange={(e) => updateSelected({ description: e.target.value })} />
               </div>
 
-              <div className="space-y-2">
-                <Label>Problem → Solution (one per line)</Label>
-                <Textarea
-                  rows={3}
-                  value={(selected.problemSolution || []).join("\n")}
-                  onChange={(e) => updateSelected({ problemSolution: e.target.value.split("\n").filter((s) => s.trim() !== "") })}
-                />
-              </div>
             </CardContent>
             <CardFooter className="justify-end">
               <Button 

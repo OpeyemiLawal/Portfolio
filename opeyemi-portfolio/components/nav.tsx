@@ -5,16 +5,15 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Menu, Volume2, MousePointer2 } from "lucide-react"
+import { Menu, MousePointer2 } from "lucide-react"
 import Link from "next/link"
 import { useSiteSettings } from "./site-settings-context"
 
 const links = [
   { href: "#projects", label: "Projects" },
   { href: "#workflow", label: "AI Workflow" },
-  { href: "#skills", label: "Skills" },
+  { href: "#skills-zone", label: "Skills" },
   { href: "#playground", label: "AI Playground" },
-  { href: "#case-studies", label: "Case Studies" },
   { href: "#testimonials", label: "Testimonials" },
   { href: "#contact", label: "Contact" },
 ]
@@ -22,7 +21,7 @@ const links = [
 export function Nav() {
   const [open, setOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
-  const { soundEnabled, setSoundEnabled, cursorEnabled, setCursorEnabled } = useSiteSettings()
+  const { cursorEnabled, setCursorEnabled } = useSiteSettings()
 
   useEffect(() => {
     let cancelled = false
@@ -60,10 +59,7 @@ export function Nav() {
               <MousePointer2 className="h-4 w-4 text-zinc-400" />
               <Switch checked={cursorEnabled} onCheckedChange={setCursorEnabled} aria-label="Toggle cursor effects" />
             </div>
-            <div className="flex items-center gap-2">
-              <Volume2 className="h-4 w-4 text-zinc-400" />
-              <Switch checked={soundEnabled} onCheckedChange={setSoundEnabled} aria-label="Toggle sound effects" />
-            </div>
+
             {isAdmin && (
               <Link href="/admin">
                 <Button variant="outline" className="border-cyan-400/30 bg-white/5 hover:bg-white/10 text-cyan-300">
@@ -103,10 +99,7 @@ export function Nav() {
                   <Label className="text-zinc-300">Cursor FX</Label>
                   <Switch checked={cursorEnabled} onCheckedChange={setCursorEnabled} />
                 </div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-zinc-300">Sound FX</Label>
-                  <Switch checked={soundEnabled} onCheckedChange={setSoundEnabled} />
-                </div>
+
                 {isAdmin && (
                   <Link href="/admin" onClick={() => setOpen(false)}>
                     <Button variant="outline" className="mb-2 w-full border-cyan-400/30 bg-white/5 hover:bg-white/10 text-cyan-300">

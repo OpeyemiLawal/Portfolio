@@ -4,12 +4,13 @@ import Image from "next/image"
 import { useEffect, useMemo, useState } from "react"
 import { projects as baseProjects } from "@/data/projects"
 import { supabaseBrowser } from "@/lib/supabase/client"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog-fixed"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, Github, ChevronLeft, ChevronRight, Play, Pause } from "lucide-react"
+import { ExternalLink, Github, ChevronLeft, ChevronRight, Play, Pause, Maximize2, Minimize2, Image as ImageIcon, Gamepad2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useSiteSettings } from "./site-settings-context"
+import Head from "next/head"
 
 const categories = [
   { id: "game", label: "Games", description: "Interactive games & experiences" },
@@ -27,7 +28,6 @@ type AdminProject = {
   category: string
   tags?: string[]
   description?: string
-  problemSolution?: string[]
   stack?: string[]
   aiTools?: string[]
   links?: { demo?: string; repo?: string }
@@ -39,8 +39,157 @@ export function FeaturedProjects() {
   const [activeTab, setActiveTab] = useState("game")
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isVideoPlaying, setIsVideoPlaying] = useState(true)
+  const [isVideoLoading, setIsVideoLoading] = useState(true)
+  const [isVideoFullscreen, setIsVideoFullscreen] = useState(false)
+  const [isGalleryFullscreen, setIsGalleryFullscreen] = useState(false)
+  const [isGameFullscreen, setIsGameFullscreen] = useState(false)
+  const [isGameLoading, setIsGameLoading] = useState(false)
+  const [showGamePlayButton, setShowGamePlayButton] = useState(true)
   const { playHover, playClick } = useSiteSettings()
   const [dbProjects, setDbProjects] = useState<AdminProject[]>([])
+
+  const toggleVideoFullscreen = () => {
+    const videoContainer = document.querySelector('.video-container')
+    if (videoContainer) {
+      if (!document.fullscreenElement) {
+        videoContainer.requestFullscreen().then(() => {
+          // Add cursor-visible class to the fullscreen element
+          if (document.fullscreenElement) {
+            document.fullscreenElement.classList.add('cursor-visible')
+            // Add close button to fullscreen
+            const closeBtn = document.createElement('button')
+            closeBtn.className = 'fixed top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors'
+            closeBtn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="w-5 h-5">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            `
+            closeBtn.onclick = () => document.exitFullscreen()
+            document.fullscreenElement.appendChild(closeBtn)
+          }
+        }).catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`)
+        })
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen()
+        }
+      }
+    }
+  }
+
+  const handlePlayGame = async () => {
+    const gameContainer = document.querySelector('.game-container')
+    if (!gameContainer) return
+
+    try {
+      // Show loading state briefly to ensure smooth transition
+      setIsGameLoading(true)
+      
+      await gameContainer.requestFullscreen()
+      setShowGamePlayButton(false)
+      
+      // Add close button to fullscreen
+      const closeBtn = document.createElement('button')
+      closeBtn.className = 'fixed top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-white hover:bg-white/20 transition-colors backdrop-blur-sm border border-gray-600'
+      closeBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="w-5 h-5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      `
+      closeBtn.onclick = (e) => {
+        e.stopPropagation()
+        document.exitFullscreen()
+      }
+      document.fullscreenElement?.appendChild(closeBtn)
+      
+      // Hide loading state after a short delay to ensure smooth transition
+      setTimeout(() => {
+        setIsGameLoading(false)
+      }, 500)
+      
+    } catch (err) {
+      console.error('Error entering fullscreen:', err)
+      setIsGameLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const fullscreenElement = document.fullscreenElement
+      
+      setIsVideoFullscreen(!!fullscreenElement?.classList.contains('video-container'))
+      setIsGalleryFullscreen(!!fullscreenElement?.classList.contains('gallery-container'))
+      
+      if (fullscreenElement?.classList.contains('game-container')) {
+        setIsGameFullscreen(true)
+        setShowGamePlayButton(false)
+      } else {
+        // Remove any existing close button when exiting fullscreen
+        const existingCloseBtn = document.querySelector('.fullscreen-close-btn')
+        if (existingCloseBtn) {
+          existingCloseBtn.remove()
+        }
+        setIsGameFullscreen(false)
+        setShowGamePlayButton(true)
+      }
+    }
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
+
+  const toggleGalleryFullscreen = () => {
+    const galleryContainer = document.querySelector('.gallery-container')
+    if (galleryContainer) {
+      if (!document.fullscreenElement) {
+        galleryContainer.requestFullscreen().then(() => {
+          // Add cursor-visible class to the fullscreen element
+          if (document.fullscreenElement) {
+            document.fullscreenElement.classList.add('cursor-visible')
+            // Add close button to fullscreen
+            const closeBtn = document.createElement('button')
+            closeBtn.className = 'fixed top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors'
+            closeBtn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="w-5 h-5">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            `
+            closeBtn.onclick = () => document.exitFullscreen()
+            document.fullscreenElement.appendChild(closeBtn)
+          }
+        }).catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`)
+        })
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen()
+        }
+      }
+    }
+  }
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const fullscreenElement = document.fullscreenElement
+      setIsVideoFullscreen(!!fullscreenElement?.classList.contains('video-container'))
+      setIsGalleryFullscreen(!!fullscreenElement?.classList.contains('gallery-container'))
+      setIsGameFullscreen(!!fullscreenElement?.classList.contains('game-container'))
+      
+      // Add or remove cursor-visible class based on fullscreen state
+      if (fullscreenElement) {
+        fullscreenElement.classList.add('cursor-visible')
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
 
 
 
@@ -64,7 +213,6 @@ export function FeaturedProjects() {
           category: row.category,
           tags: Array.isArray(row.tags) ? row.tags : [],
           description: row.description || "",
-          problemSolution: Array.isArray(row.problem_solution) ? row.problem_solution : [],
           stack: Array.isArray(row.stack) ? row.stack : [],
           aiTools: Array.isArray(row.ai_tools) ? row.ai_tools : [],
           links: typeof row.links === "object" && row.links !== null ? row.links : {},
@@ -117,6 +265,20 @@ export function FeaturedProjects() {
 
   return (
     <section className="w-full py-20" id="projects">
+      <Head>
+        <style jsx global>{`
+          @keyframes cursor-blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+          @keyframes spin-medium {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          .animate-spin-medium {
+            animation: spin-medium 2s linear infinite;
+          }
+          .cursor-blink { animation: cursor-blink 1.5s infinite; }
+          .cursor-visible * { cursor: default !important; }
+        `}</style>
+      </Head>
       <div className="mx-auto max-w-7xl px-4">
         <motion.div
           className="mb-16 text-center"
@@ -201,13 +363,34 @@ export function FeaturedProjects() {
                       {project.title}
                     </h3>
                     <p className="mb-4 text-sm leading-relaxed text-gray-400">{project.subtitle}</p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 max-w-full [&>div]:whitespace-nowrap">
                       {project.tags?.map((tag) => (
                         <Badge key={tag} variant="secondary" className="bg-gray-800 text-gray-300">
                           {tag}
                         </Badge>
                       ))}
                     </div>
+                    
+                    {project.gallery && project.gallery.length > 0 && (
+                      <div className="flex justify-end">
+                        <button
+                          onClick={toggleGalleryFullscreen}
+                          className="text-xs text-gray-400 hover:text-white flex items-center gap-1 mt-1"
+                        >
+                          {isGalleryFullscreen ? (
+                            <>
+                              <Minimize2 className="w-3 h-3" />
+                              <span>Exit fullscreen</span>
+                            </>
+                          ) : (
+                            <>
+                              <Maximize2 className="w-3 h-3" />
+                              <span>View fullscreen</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -228,48 +411,96 @@ export function FeaturedProjects() {
         )}
       </div>
 
-      <Dialog open={active !== null} onOpenChange={() => setActive(null)}>
-        <DialogContent className="w-[95vw] max-w-[1600px] h-[90vh] max-h-[1200px] p-0 border-gray-800 bg-gray-900/95 backdrop-blur-xl overflow-hidden">
+      <Dialog open={active !== null} onOpenChange={(isOpen) => !isOpen && setActive(null)}>
+        <DialogContent 
+          className="p-0 border border-gray-700 bg-gray-900/95 backdrop-blur-xl overflow-hidden rounded-lg"
+          showCloseButton={false}
+        >
           {active !== null && (
             <>
-              <DialogHeader className="border-b border-gray-800 pb-4">
-                <DialogTitle className="text-2xl font-bold font-mono text-white">
+              <DialogHeader className="border-b border-gray-800 pb-4 relative">
+                <Button
+                  onClick={() => setActive(null)}
+                  className="absolute right-4 top-4 h-8 w-8 p-0 rounded-full bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 text-gray-300 hover:text-white"
+                  variant="ghost"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                  <span className="sr-only">Close</span>
+                </Button>
+                <DialogTitle className="text-2xl font-bold font-mono text-white pr-10">
                   {filteredProjects[active].title}
                 </DialogTitle>
                 <p className="text-gray-400 mt-2">{filteredProjects[active].subtitle}</p>
               </DialogHeader>
 
-              <div className="grid gap-8 lg:grid-cols-2 h-full overflow-y-auto p-8">
+              <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] h-full overflow-y-auto p-6">
                 {/* Video Section */}
-                <div className="space-y-6 h-full flex flex-col">
-                  <div className="relative aspect-video overflow-hidden rounded-lg border border-gray-700 bg-gray-800/50">
-                    {filteredProjects[active].video && filteredProjects[active].video.includes('youtube.com/embed') ? (
-                      <iframe
-                        src={filteredProjects[active].video}
-                        title={`${filteredProjects[active].title} - YouTube Video`}
-                        className="w-full h-full"
-                        allowFullScreen
-                      />
-                    ) : filteredProjects[active].video ? (
-                      <video
-                        src={filteredProjects[active].video}
-                        autoPlay={isVideoPlaying}
-                        muted
-                        loop
-                        className="w-full h-full object-contain"
-                        onLoadedData={() => setIsVideoPlaying(true)}
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-500">
-                        <p>No video available</p>
+                <div className="space-y-6 h-full flex flex-col overflow-y-auto pr-2">
+                  <div 
+                    className="relative w-full rounded-lg border border-gray-700 bg-gray-800/50 video-container"
+                    style={{ 
+                      cursor: 'default',
+                      aspectRatio: '16/9',
+                      height: '0',
+                      paddingBottom: '56.25%', // 16:9 aspect ratio
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {isVideoLoading && filteredProjects[active].video && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm z-10">
+                        <div className="animate-pulse text-center">
+                          <div className="w-8 h-8 border-4 border-fuchsia-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                          <p className="text-sm text-gray-400 font-mono">Loading video...</p>
+                        </div>
                       </div>
                     )}
-                    {filteredProjects[active].video && !filteredProjects[active].video.includes('youtube.com/embed') && (
+                    {filteredProjects[active].video && filteredProjects[active].video.includes('youtube.com/embed') ? (
+                      <div className="absolute inset-0 w-full h-full">
+                        <iframe
+                          src={filteredProjects[active].video}
+                          title={`${filteredProjects[active].title} - YouTube Video`}
+                          className="w-full h-full"
+                          allowFullScreen
+                          onLoad={() => setIsVideoLoading(false)}
+                          style={{
+                            border: 'none',
+                            position: 'absolute',
+                            top: '0',
+                            left: '0',
+                            width: '100%',
+                            height: '100%'
+                          }}
+                        />
+                      </div>
+                    ) : filteredProjects[active].video ? (
                       <>
+                        <div className="absolute inset-0 w-full h-full">
+                          <video
+                            src={filteredProjects[active].video}
+                            autoPlay={isVideoPlaying}
+                            muted
+                            loop
+                            className="w-full h-full object-cover"
+                            onClick={() => setIsVideoPlaying(!isVideoPlaying)}
+                            style={{
+                              position: 'absolute',
+                              top: '0',
+                              left: '0',
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                          />
+                        </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                         <button
                           onClick={() => setIsVideoPlaying(!isVideoPlaying)}
-                          className="absolute bottom-4 right-4 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-gray-600 hover:bg-black/70 transition-colors"
+                          className="absolute bottom-4 right-16 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-gray-600 hover:bg-black/70 transition-colors z-10"
+                          aria-label={isVideoPlaying ? 'Pause video' : 'Play video'}
                         >
                           {isVideoPlaying ? (
                             <Pause className="w-4 h-4 text-white" />
@@ -278,13 +509,130 @@ export function FeaturedProjects() {
                           )}
                         </button>
                       </>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-500">
+                        <p>No video available</p>
+                      </div>
                     )}
+                    {filteredProjects[active].video && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleVideoFullscreen()
+                        }}
+                        className="absolute bottom-4 right-4 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-gray-600 hover:bg-black/70 transition-colors z-10"
+                        aria-label={isVideoFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                      >
+                        {isVideoFullscreen ? (
+                          <Minimize2 className="w-4 h-4 text-white" />
+                        ) : (
+                          <Maximize2 className="w-4 h-4 text-white" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Playable Game Section */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-semibold text-gray-300 font-mono">Play the Game</h4>
+                      <button
+                        onClick={handlePlayGame}
+                        className="p-1.5 rounded bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 text-gray-300 hover:text-white transition-colors"
+                        title="Play in fullscreen"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="relative w-full overflow-hidden rounded-lg border border-gray-700 bg-gray-800/50 game-container" style={{ paddingBottom: '56.25%' /* 16:9 Aspect Ratio */, height: 0 }}>
+                      {filteredProjects[active].category === 'game' ? (
+                        <div className="absolute top-0 left-0 w-full h-full">
+                          {showGamePlayButton && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm z-10">
+                              <button 
+                                onClick={handlePlayGame}
+                                className="px-10 py-3 bg-gradient-to-r from-fuchsia-600 to-cyan-600 rounded-lg hover:from-fuchsia-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500"
+                              >
+                                <span className="font-mono font-bold text-white tracking-wider">
+                                  PLAY NOW
+                                </span>
+                              </button>
+                            </div>
+                          )}
+                          {isGameLoading && !showGamePlayButton && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm z-10">
+                              <div className="animate-pulse text-center">
+                                <div className="w-8 h-8 border-4 border-fuchsia-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                                <p className="text-sm text-gray-400 font-mono">Loading game...</p>
+                              </div>
+                            </div>
+                          )}
+                          <div className={`absolute inset-0 transition-opacity duration-500 ${!isGameFullscreen ? 'opacity-0' : 'opacity-100'}`}>
+                            {filteredProjects[active].links?.demo ? (
+                            <iframe
+                              src={filteredProjects[active].links.demo.startsWith('http') ? filteredProjects[active].links.demo : `https://${filteredProjects[active].links.demo}`}
+                              title={`Play ${filteredProjects[active].title}`}
+                              className="w-full h-full"
+                              allowFullScreen
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              style={{
+                                border: 'none',
+                                width: '100%',
+                                height: '100%',
+                                aspectRatio: '16/9',
+                                display: isGameLoading ? 'none' : 'block'
+                              }}
+                              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                              onLoad={() => {
+                                setIsGameLoading(false)
+                              }}
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full text-gray-400">
+                              <p>No playable demo available</p>
+                            </div>
+                          )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-400">
+                          <Gamepad2 className="w-8 h-8 mb-2" />
+                          <p>No playable demo available for this project</p>
+                          {filteredProjects[active].links?.demo && (
+                            <a 
+                              href={filteredProjects[active].links.demo} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="mt-2 text-cyan-400 hover:underline text-sm"
+                            >
+                              Open in new tab
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Gallery Section */}
                   <div className="space-y-3">
-                    <h4 className="text-sm font-semibold text-gray-300 font-mono">Project Gallery</h4>
-                    <div className="relative">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-semibold text-gray-300 font-mono">Project Gallery</h4>
+                      <button
+                        onClick={toggleGalleryFullscreen}
+                        className="p-1.5 rounded bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 text-gray-300 hover:text-white transition-colors"
+                        title={isGalleryFullscreen ? "Exit fullscreen" : "View fullscreen"}
+                      >
+                        {isGalleryFullscreen ? (
+                          <Minimize2 className="w-3.5 h-3.5" />
+                        ) : (
+                          <Maximize2 className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                    <div 
+                      className="relative gallery-container"
+                      style={{ cursor: 'default' }}
+                    >
                       <div className="aspect-video overflow-hidden rounded-lg border border-gray-700">
                         <Image
                           src={filteredProjects[active].gallery?.[currentImageIndex] || filteredProjects[active].cover || "/placeholder.svg"}
@@ -340,63 +688,176 @@ export function FeaturedProjects() {
                 </div>
 
                 {/* Project Details */}
-                <div className="space-y-6 overflow-y-auto pr-4">
-                  <div>
-                    <p className="text-gray-300 leading-relaxed">{filteredProjects[active].description}</p>
-                  </div>
-
-                  <div>
-                    <h4 className="mb-3 text-sm font-semibold text-cyan-400 font-mono">Problem → Solution</h4>
-                    <ul className="space-y-2">
-                      {filteredProjects[active].problemSolution?.map((item, i) => (
-                        <li key={i} className="text-sm text-gray-300 pl-4 border-l-2 border-gray-700">
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h4 className="mb-3 text-sm font-semibold text-gray-300 font-mono">Tech Stack</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {filteredProjects[active].stack?.map((tech) => (
-                        <Badge key={tech} className="bg-gray-800 text-gray-300 border border-gray-700">
-                          {tech}
-                        </Badge>
-                      ))}
+                <div className="space-y-8 overflow-y-auto pr-2 pl-2">
+                  {/* Project Overview */}
+                  <motion.div 
+                    className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1.5 h-5 bg-gradient-to-b from-cyan-400 to-fuchsia-500 rounded-full"></div>
+                      <h4 className="text-sm font-semibold text-cyan-400 font-mono tracking-wider">PROJECT OVERVIEW</h4>
                     </div>
-                  </div>
+                    <p className="text-gray-300 leading-relaxed text-justify text-sm">
+                      {filteredProjects[active].description}
+                    </p>
+                  </motion.div>
 
-                  <div>
-                    <h4 className="mb-3 text-sm font-semibold text-purple-400 font-mono">AI Tools Used</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {filteredProjects[active].aiTools?.map((tool) => (
-                        <Badge key={tool} className="bg-purple-600/20 text-purple-200 border border-purple-600/30">
-                          {tool}
-                        </Badge>
-                      ))}
+                  {/* Project Tags */}
+                  {filteredProjects[active].tags && filteredProjects[active].tags.length > 0 && (
+                    <motion.div 
+                      className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.6 }}
+                    >
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-1.5 h-5 bg-gradient-to-b from-cyan-400 to-fuchsia-500 rounded-full"></div>
+                        <h4 className="text-sm font-semibold text-cyan-400 font-mono tracking-wider">PROJECT TAGS</h4>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {filteredProjects[active].tags?.map((tag, index) => (
+                          <motion.div
+                            key={tag}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 + index * 0.05 }}
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            <Badge 
+                              className="text-gray-200 border border-gray-700 hover:border-cyan-400/30 transition-all duration-300"
+                              style={{
+                                background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.5))',
+                                backdropFilter: 'blur(8px)'
+                              }}
+                            >
+                              {tag}
+                            </Badge>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Tech Stack */}
+                  <motion.div 
+                    className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.3 }}
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1.5 h-5 bg-gradient-to-b from-cyan-400 to-fuchsia-500 rounded-full"></div>
+                      <h4 className="text-sm font-semibold text-cyan-400 font-mono tracking-wider">TECH STACK</h4>
                     </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-800">
-                    {filteredProjects[active].links?.demo && filteredProjects[active].links.demo !== "#" && (
-                      <a href={filteredProjects[active].links.demo!} target="_blank" rel="noreferrer">
-                        <Button className="bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-600/25">
-                          <ExternalLink className="mr-2 h-4 w-4" /> Live Demo
-                        </Button>
-                      </a>
-                    )}
-                    {filteredProjects[active].links?.repo && filteredProjects[active].links.repo !== "#" && (
-                      <a href={filteredProjects[active].links.repo!} target="_blank" rel="noreferrer">
-                        <Button
-                          variant="outline"
-                          className="border-gray-600 bg-gray-800/50 text-gray-300 hover:bg-gray-700"
+                    <div className="flex flex-wrap gap-2">
+                      {filteredProjects[active].stack?.map((tech, index) => (
+                        <motion.div
+                          key={tech}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 + index * 0.05 }}
                         >
-                          <Github className="mr-2 h-4 w-4" /> Source Code
-                        </Button>
-                      </a>
-                    )}
-                  </div>
+                          <Badge 
+                            className="bg-gray-800/80 text-gray-200 border border-gray-700 hover:border-cyan-400/50 hover:bg-gray-800 transition-all duration-300"
+                            style={{
+                              background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.7))',
+                              backdropFilter: 'blur(8px)',
+                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                            }}
+                          >
+                            {tech}
+                          </Badge>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  {/* AI Tools */}
+                  <motion.div 
+                    className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.4 }}
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1.5 h-5 bg-gradient-to-b from-purple-400 to-fuchsia-500 rounded-full"></div>
+                      <h4 className="text-sm font-semibold text-purple-400 font-mono tracking-wider">AI TOOLS USED</h4>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {filteredProjects[active].aiTools?.map((tool, index) => (
+                        <motion.div
+                          key={tool}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 + index * 0.05 }}
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          <Badge 
+                            className="text-purple-200 border border-purple-800/50 hover:border-purple-400/50 transition-all duration-300"
+                            style={{
+                              background: 'linear-gradient(145deg, rgba(76, 29, 149, 0.3), rgba(107, 33, 168, 0.3))',
+                              backdropFilter: 'blur(8px)',
+                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                            }}
+                          >
+                            {tool}
+                          </Badge>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  {/* Project Links */}
+                  <motion.div 
+                    className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-xl p-6"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.5 }}
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1.5 h-5 bg-gradient-to-b from-fuchsia-400 to-cyan-400 rounded-full"></div>
+                      <h4 className="text-sm font-semibold text-fuchsia-400 font-mono tracking-wider">PROJECT LINKS</h4>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {filteredProjects[active].links?.demo && (
+                        <motion.a
+                          href={filteredProjects[active].links.demo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group relative flex-1 min-w-[160px] px-6 py-3 text-sm font-medium text-center rounded-lg overflow-hidden transition-all duration-300"
+                          whileHover={{ y: -2, boxShadow: '0 10px 25px -5px rgba(236, 72, 153, 0.4)' }}
+                          style={{
+                            background: 'linear-gradient(145deg, rgba(192, 38, 211, 0.9), rgba(34, 211, 238, 0.9))',
+                            backdropFilter: 'blur(8px)'
+                          }}
+                        >
+                          <span className="relative z-10 flex items-center justify-center gap-2 text-white">
+                            <ExternalLink className="w-4 h-4" />
+                            Live Demo
+                          </span>
+                          <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </motion.a>
+                      )}
+                      {filteredProjects[active].links?.repo && (
+                        <motion.a
+                          href={filteredProjects[active].links.repo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group relative flex-1 min-w-[160px] px-6 py-3 text-sm font-medium text-center bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden transition-all duration-300"
+                          whileHover={{ y: -2, boxShadow: '0 10px 25px -5px rgba(6, 182, 212, 0.2)' }}
+                        >
+                          <span className="relative z-10 flex items-center justify-center gap-2 text-gray-200 group-hover:text-white">
+                            <Github className="w-4 h-4" />
+                            View Code
+                          </span>
+                          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-fuchsia-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </motion.a>
+                      )}
+                    </div>
+                  </motion.div>
                 </div>
               </div>
             </>

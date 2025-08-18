@@ -15,10 +15,6 @@ export const projects = [
     tags: ["Game", "WebGL", "Shaders"],
     description:
       "A high-polish micro-game built for the web with performance-first rendering and playful interactions. Rapid prototyping aided by AI for shaders and UI copy.",
-    problemSolution: [
-      "Problem: Build a fast, visually striking game that runs smoothly on mobile.",
-      "Solution: Lightweight rendering + shader effects; AI-assisted iteration on VFX and level variations.",
-    ],
     stack: ["Three.js", "React Three Fiber", "TypeScript"],
     aiTools: ["GitHub Copilot", "GPT (prompted shader tweaks)", "Midjourney (moodboards)"],
     links: { demo: "#", repo: "#" },
@@ -39,10 +35,6 @@ export const projects = [
     tags: ["Unity", "C#", "2D"],
     description:
       "A polished 2D platformer featuring procedural level generation and tight physics controls. Built with Unity's new Input System and Cinemachine.",
-    problemSolution: [
-      "Problem: Create engaging platformer mechanics with replayability.",
-      "Solution: Procedural generation + responsive controls; AI-assisted level design patterns.",
-    ],
     stack: ["Unity", "C#", "Cinemachine"],
     aiTools: ["GitHub Copilot", "GPT (game mechanics)", "Stable Diffusion (sprites)"],
     links: { demo: "#", repo: "#" },
@@ -63,10 +55,6 @@ export const projects = [
     tags: ["Tools", "Automation"],
     description:
       "A modular tools platform for batch operations and content pipelines. AI accelerates boilerplate generation and script stubs.",
-    problemSolution: [
-      "Problem: Slow repetitive content pipeline steps.",
-      "Solution: Unified tool UI + automation scripts; AI for initial code and refactors.",
-    ],
     stack: ["Next.js", "Node.js", "Tailwind"],
     aiTools: ["GitHub Copilot", "GPT (refactor/code assist)"],
     links: { demo: "#", repo: "#" },
@@ -87,10 +75,6 @@ export const projects = [
     tags: ["React", "D3.js", "Analytics"],
     description:
       "A comprehensive analytics dashboard with real-time data visualization and custom chart components. Features role-based access and export functionality.",
-    problemSolution: [
-      "Problem: Complex data visualization with real-time updates.",
-      "Solution: Optimized rendering + WebSocket integration; AI-generated chart configurations.",
-    ],
     stack: ["React", "TypeScript", "D3.js", "Node.js"],
     aiTools: ["GitHub Copilot", "GPT (data processing)", "Claude (documentation)"],
     links: { demo: "#", repo: "#" },
@@ -111,10 +95,6 @@ export const projects = [
     tags: ["Next.js", "Three.js", "Framer Motion"],
     description:
       "A cutting-edge portfolio website featuring interactive 3D elements, smooth animations, and a cyber-futuristic design aesthetic.",
-    problemSolution: [
-      "Problem: Stand out in a crowded portfolio landscape.",
-      "Solution: Interactive 3D elements + smooth animations; AI-assisted content generation.",
-    ],
     stack: ["Next.js", "TypeScript", "Three.js", "Tailwind"],
     aiTools: ["GitHub Copilot", "GPT (content)", "Midjourney (visuals)"],
     links: { demo: "#", repo: "#" },
@@ -135,10 +115,6 @@ export const projects = [
     tags: ["Next.js", "Stripe", "PostgreSQL"],
     description:
       "A complete e-commerce solution with product management, payment processing, and comprehensive admin tools.",
-    problemSolution: [
-      "Problem: Build scalable e-commerce with modern UX.",
-      "Solution: Server-side rendering + optimistic UI; AI-generated product descriptions.",
-    ],
     stack: ["Next.js", "PostgreSQL", "Stripe", "Tailwind"],
     aiTools: ["GitHub Copilot", "GPT (product copy)", "Claude (documentation)"],
     links: { demo: "#", repo: "#" },
@@ -159,10 +135,6 @@ export const projects = [
     tags: ["Shaders", "R&D"],
     description:
       "Interactive shader experiments. AI speeds up iteration by generating code snippets and explaining complex math.",
-    problemSolution: [
-      "Problem: Iterate quickly on shader effects and visuals.",
-      "Solution: Prompt-driven prototyping; small generated code snippets to test ideas faster.",
-    ],
     stack: ["WebGL", "Three.js"],
     aiTools: ["GPT (code snippets)", "DALL·E (refs)"],
     links: { demo: "#", repo: "#" },
@@ -183,10 +155,6 @@ export const projects = [
     tags: ["p5.js", "Generative", "Art"],
     description:
       "A collection of generative art pieces exploring algorithmic creativity. Interactive parameters allow real-time manipulation of visual elements.",
-    problemSolution: [
-      "Problem: Create unique, interactive art experiences on the web.",
-      "Solution: Mathematical algorithms + user interaction; AI-assisted parameter exploration.",
-    ],
     stack: ["p5.js", "JavaScript", "Canvas API"],
     aiTools: ["GPT (algorithm ideas)", "DALL·E (inspiration)", "Runway (video exports)"],
     links: { demo: "#", repo: "#" },
