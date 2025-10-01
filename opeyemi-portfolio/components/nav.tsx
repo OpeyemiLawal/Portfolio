@@ -10,12 +10,13 @@ import Link from "next/link"
 import { useSiteSettings } from "./site-settings-context"
 
 const links = [
-  { href: "#projects", label: "Projects" },
+  { href: "/", label: "Home" },
+  { href: "/project-lab", label: "Projects" },
   { href: "#workflow", label: "AI Workflow" },
   { href: "#skills-zone", label: "Skills" },
   { href: "#playground", label: "AI Playground" },
   { href: "#testimonials", label: "Testimonials" },
-  { href: "#contact", label: "Contact" },
+  { href: "#contact", label: "Cobntact" },
 ]
 
 export function Nav() {
@@ -36,7 +37,7 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0a0a0c]/70 backdrop-blur supports-[backdrop-filter]:bg-[#0a0a0c]/50">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="#" className="group inline-flex items-center gap-2">
+        <Link href="/" className="group inline-flex items-center gap-2">
           <div className="h-3 w-3 rounded-full bg-fuchsia-500 shadow-[0_0_18px] shadow-fuchsia-500/80 transition-all group-hover:scale-110" />
           <span className="text-sm font-medium tracking-widest text-zinc-300 group-hover:text-white">
             OPEYEMI LAWAL

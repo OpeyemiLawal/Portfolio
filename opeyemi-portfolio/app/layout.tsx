@@ -12,9 +12,11 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.dev",
+  title: {
+    default: "Opeyemi Lawal — Portfolio",
+    template: "%s — Opeyemi Lawal",
+  },
+  description: "Game Developer • Creative Coder • Software Engineer",
 }
 
 export default function RootLayout({

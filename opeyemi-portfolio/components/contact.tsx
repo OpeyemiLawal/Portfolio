@@ -52,7 +52,7 @@ export function Contact() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0">
               <p className="font-mono text-gray-400 italic">"Crafted with code, curiosity, and chaos."</p>
-              <p className="text-sm text-gray-500 mt-2">© 2024 Opeyemi. All rights reserved.</p>
+              <p className="text-sm text-gray-500 mt-2">© 2025 Opeyemi. All rights reserved.</p>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-6">
               <motion.div
